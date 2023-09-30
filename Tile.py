@@ -7,10 +7,12 @@ class Tile:
         self.player = None
 
     def __str__(self):
-        if self.treasure:
+        if self.treasure is not None:
             return self.treasure.description
+        elif self.player is not None:
+            return self.player.name
         else:
-            return self.treasure    # return default value
+            return self.description    # return default value
 
     def add_player(self, player):
         self.player = player    # add a player to the tile
