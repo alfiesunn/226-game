@@ -4,8 +4,9 @@ import random
 from Board import Board
 from View import display
 
-
+# Setting size of board, and who many players
 board = Board(10, 5, 5, 10, 2)
+# Create player
 board.add_player("1", random.randint(0, board.n - 1), random.randint(0, board.n - 1))
 board.add_player("2", random.randint(0, board.n - 1), random.randint(0, board.n - 1))
 
