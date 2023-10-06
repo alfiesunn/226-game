@@ -36,7 +36,7 @@ class Board:
         if x < 0 or y < 0 or len(self.players) > self.max_players:
             raise ValueError("Value is bigger than maximum.")
         if self.board[x][y].player:
-            raise ValueError("Tile already there.")
+            raise ValueError("Player already there.")
 
         player = Player(name)                       # Create a new player object
         self.players[name] = {}                     # Initialize the player dictionary entry
