@@ -4,3 +4,10 @@ class Player:
             raise TypeError("You need to type a string.")
         self.name = name
         self.score = 0
+
+    def add_score(self, scores):
+        self.score += scores
+
+    def total_score(self):
+        return self.score
+
