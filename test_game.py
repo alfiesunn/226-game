@@ -101,7 +101,7 @@ def test_player_collects_treasure():
         b.move_player('Seer', 'R')
         assert b.players['Seer']['score'] == score_increment
 
-# test
+
 
 
 
