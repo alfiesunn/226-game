@@ -79,6 +79,7 @@ class Board:
         # check the treasure if it is in the board
         if self.board[x][y].treasure is not None:
             score_increment = self.board[x][y].treasure.value
+            # Player.add_score(self.players[name], score_increment)
             print(self.players[name])
             self.players[name]['score'] += score_increment      # Update the player's score
             self.board[x][y].treasure = None        # Remove the treasure
