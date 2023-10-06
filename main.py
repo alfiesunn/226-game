@@ -1,18 +1,37 @@
-# # This is a sample Python script.
-#
-# # Press Shift+F10 to execute it or replace it with your code.
-# # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-#
-#
-# def print_hi(name):
-#     # Use a breakpoint in the code line below to debug your script.
-#     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-#
-#
-# # Press the green button in the gutter to run the script.
-# if __name__ == '__main__':
-#     print_hi('PyCharm')
-#
-# # See PyCharm help at https://www.jetbrains.com/help/pycharm/
+#!/usr/bin/python3.11
+import random
 
-print("Hello")
+from Board import Board
+from View import display
+
+# Setting size of board, and who many players
+board = Board(10, 5, 5, 10, 2)
+# Create player
+board.add_player("1", random.randint(0, board.n - 1), random.randint(0, board.n - 1))
+board.add_player("2", random.randint(0, board.n - 1), random.randint(0, board.n - 1))
+
+# while board.count_treasures():
+while True:
+    display(board)
+
+
+    playerInput = input('Which player do you want to move, 1 or 2\n')
+    userInput = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n ').upper()
+
+    if userInput != 'Q':
+        pass
+    else:
+        exit()
+
+    board.move_player(playerInput, userInput)
+
+    if not isinstance(userInput, str):
+        raise TypeError("Error type.")
+
+    for name, obj in board.players.items():
+        # print(f"Player {name} the score is {board.players[name]['score']}")
+        print(f"Player {name} the score is {obj['score']}")
+
+
+
+
