@@ -68,7 +68,7 @@ class Board:
         print(self.players)
 
         if x < 0 or y < 0 or x >= len(self.board) or y >= len(self.board) or self.board[x][y].player:
-             print("Move not allowed.")
+             raise ValueError("Move not allowed.")
         else:
             # Update player's position
             self.board[self.players[name]['location'][0]][self.players[name]['location'][1]].player = None
