@@ -4,6 +4,27 @@ import random
 from Board import Board
 from View import display
 
+# TCP Server
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+# 1 byte segments
+# BUF_SIZE = 1
+# HOST = ''
+# PORT = 12345
+#
+# with socket(AF_INET, SOCK_STREAM) as sock: # TCP socket
+#     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1) # Details later
+#     sock.bind((HOST, PORT)) # Claim messages sent to port "PORT"
+#     sock.listen(1) # Server only supports a single 3-way handshake at a time
+#     print('Server:', sock.getsockname()) # Server IP and port
+#     while True:
+#         sc, _ = sock.accept() # Wait until a connection is established
+#         with sc:
+#         print('Client:', sc.getpeername()) # Client IP and port
+#         data = sc.recv(BUF_SIZE) # recvfrom not needed since address known
+#         print(data)
+#         sc.sendall(data) # Client IP and port implicit due to accept call
+
+
 # Setting size of board, and who many players
 board = Board(10, 5, 5, 10, 2)
 # Create player
@@ -14,8 +35,8 @@ board.add_player("2", random.randint(0, board.n - 1), random.randint(0, board.n 
 while True:
     display(board)
 
-
     playerInput = input('Which player do you want to move, 1 or 2\n')
+
     userInput = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n ').upper()
 
     if userInput != 'Q':
@@ -23,7 +44,10 @@ while True:
     else:
         exit()
 
-    board.move_player(playerInput, userInput)
+    try:
+        board.move_player(playerInput, userInput)
+    except ValueError as details:
+        print(details)
 
     if not isinstance(userInput, str):
         raise TypeError("Error type.")
