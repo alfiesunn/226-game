@@ -42,6 +42,7 @@ while True:
     if userInput != 'Q':
         pass
     else:
+        print("Good Game My Friend!")
         exit()
 
     try:
