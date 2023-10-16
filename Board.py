@@ -67,7 +67,7 @@ class Board:
 
         # print(self.players)
 
-        if x < 0 or y < 0 or x >= len(self.board) or y >= len(self.board) or self.board[x][y].player:
+        if x < 0 or y < 0 or x >= self.n or y >= self.n or self.board[x][y].player:
             raise ValueError("Move not allowed.")
         else:
             # Update player's position
