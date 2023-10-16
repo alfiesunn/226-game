@@ -39,16 +39,16 @@ class Game:
                     # Convert the data to a bit string
                     number = int.from_bytes(data, byteorder='big')
                     bit_string = '{0:b}'.format(number)
-                    print(bit_string)
-                    print(number)
+                    # print(bit_string)
+                    # print(number)
 
                     # Figure out which bits are set
                     # for p in range(8):
                     #     print(f'Bit {p} is {1 if number & 2 ** p > 0 else 0}')
 
                     # Figure out if all four top bits are set
-                    if number & 0xf0 == 0xf0:
-                        print('All four top bits are set')
+                    # if number & 0xf0 == 0xf0:
+                    #     print('All four top bits are set')
 
                     player_input = None
                     user_input = None
@@ -65,19 +65,28 @@ class Game:
 
                     if number & 0xf0 == 0x20:
                         user_input = 'U'
+                        display(self.board)
                         print('Player Move Up')
 
                     elif number & 0xf0 == 0x40:
                         user_input = 'L'
+                        display(self.board)
                         print('Player Move left')
 
                     elif number & 0xf0 == 0x60:
                         user_input = 'R'
+                        display(self.board)
                         print('Player Move Right')
 
                     elif number & 0xf0 == 0x30:
                         user_input = 'D'
+                        display(self.board)
                         print('Player Move Down')
+
+                    elif number & 0xf0 == 0xf0:
+                        user_input = 'G'
+                        display(self.board)
+                        print('Showing board')
 
                     elif number & 0xf0 == 0x80:
                         user_input = 'Q'
@@ -85,26 +94,24 @@ class Game:
                             pass
                         else:
                             print("Good Game My Friend!")
+                            print('Player Quit')
                             exit()
-                        print('Player Quit')
-
-                    elif number & 0xf0 == 0xf0:
-                        display(self.board)
-                        print('Showing board')
 
                     for name, obj in self.board.players.items():
                         # print(f"Player {name} the score is {board.players[name]['score']}")
                         print(f"Player {name} the score is {obj['score']}")
 
-                    if user_input is not None or player_input is not None:
+                    print()
+
+                    if user_input is not None or player_input is not None or number & 0xf0 == 0xf0:
                         try:
                             self.board.move_player(player_input, user_input)
                         except ValueError as details:
                             print(details)
-                    # else:
-                    #     print('Invalid input, disconnect right now.')
-                    #     sc.close()
-                    #     break
+                    else:
+                        print('Invalid input, disconnect right now.')
+                        sc.close()
+                        break
 
                     # Send the result to the client
                     sc.sendall(b'You sent: ' + bit_string.encode() + b'\n')
