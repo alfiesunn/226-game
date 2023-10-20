@@ -65,20 +65,20 @@ class Board:
             case _:
                 raise ValueError("Unknown command")
 
-        print(self.players)
+        # print(self.players)
 
-        if x < 0 or y < 0 or x >= len(self.board) or y >= len(self.board) or self.board[x][y].player:
-             raise ValueError("Move not allowed.")
+        if x < 0 or y < 0 or x >= self.n or y >= self.n or self.board[x][y].player:
+            raise ValueError("Move not allowed.")
         else:
             # Update player's position
             self.board[self.players[name]['location'][0]][self.players[name]['location'][1]].player = None
             self.players[name]['location'] = (x, y)     # setup the new location in the dictionary
             self.board[x][y].add_player(Player(name))
 
-
         # check the treasure if it is in the board
         if self.board[x][y].treasure is not None:
             score_increment = self.board[x][y].treasure.value
+            # Player.add_score(self.players[name], score_increment)
             print(self.players[name])
             self.players[name]['score'] += score_increment      # Update the player's score
             self.board[x][y].treasure = None        # Remove the treasure

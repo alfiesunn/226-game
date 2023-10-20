@@ -89,7 +89,7 @@ def test_move_into_player():
     with pytest.raises(ValueError, match='Move not allowed.'):
         b = Board(10, 5, 5, 10, 2)
         b.add_player('Seer', 1, 2)
-        b.add_player('Gakuto', 1,3)
+        b.add_player('Gakuto', 1, 3)
         b.move_player('Seer','R')
 
 # test if player collects a treasure
