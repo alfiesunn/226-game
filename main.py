@@ -1,5 +1,6 @@
 #!/usr/bin/python3.11
 import random
+import struct
 
 from Board import Board
 from View import display
@@ -10,7 +11,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 
 # 1 byte segments
 BUF_SIZE = 1
-HOST = '127.0.0.1'
+HOST = ''
 PORT = 12345
 
 
@@ -39,6 +40,7 @@ class Game:
                     # Convert the data to a bit string
                     number = int.from_bytes(data, byteorder='big')
                     bit_string = '{0:b}'.format(number)
+
                     # print(bit_string)
                     # print(number)
 
@@ -53,6 +55,14 @@ class Game:
                     player_input = None
                     user_input = None
 
+                    sent_score = b''
+                    for name, obj in self.board.players.items():
+                        # print(f"Player {name} the score is {board.players[name]['score']}")
+                        player_score = struct.pack('!H', int(obj['score']))
+                        sent_score += player_score
+                        print(f"Player {name} the score is {obj['score']}")
+                    sc.sendall(sent_score)
+
                     # f0 is for direction, 0f is for player
 
                     if number & 0x0f == 0x04:
@@ -65,27 +75,28 @@ class Game:
 
                     if number & 0xf0 == 0x20:
                         user_input = 'U'
-                        display(self.board)
+                        print(display(self.board))
                         print('Player Move Up')
 
                     elif number & 0xf0 == 0x40:
                         user_input = 'L'
-                        display(self.board)
+                        print(display(self.board))
                         print('Player Move left')
 
                     elif number & 0xf0 == 0x60:
                         user_input = 'R'
-                        display(self.board)
+                        print(display(self.board))
                         print('Player Move Right')
 
                     elif number & 0xf0 == 0x30:
                         user_input = 'D'
-                        display(self.board)
+                        print(display(self.board))
                         print('Player Move Down')
 
                     elif number & 0xf0 == 0xf0:
                         user_input = 'G'
-                        display(self.board)
+                        print(display(self.board))
+                        sc.sendall(str(display(self.board)).encode('utf-8'))
                         print('Showing board')
 
                     elif number & 0xf0 == 0x80:
@@ -97,12 +108,6 @@ class Game:
                             print('Player Quit')
                             exit()
 
-                    for name, obj in self.board.players.items():
-                        # print(f"Player {name} the score is {board.players[name]['score']}")
-                        print(f"Player {name} the score is {obj['score']}")
-
-                    print()
-
                     if user_input is not None or player_input is not None or number & 0xf0 == 0xf0:
                         try:
                             self.board.move_player(player_input, user_input)
@@ -110,11 +115,12 @@ class Game:
                             print(details)
                     else:
                         print('Invalid input, disconnect right now.')
-                        sc.close()
+                        # sc.close()
                         break
 
                     # Send the result to the client
-                    sc.sendall(b'You sent: ' + bit_string.encode() + b'\n')
+
+
 
 
 if __name__ == "__main__":
