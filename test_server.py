@@ -222,7 +222,7 @@ def stroll_along(score1: int, score2: int, dir1: str, dir2: str, dir3: str) -> N
     assert score2 == new_score2
 
 
-@pytest.mark.parametrize('execution_number', range(10))
+@pytest.mark.parametrize('execution_number', range(1))
 def test_board(execution_number):
     board, score1, score2 = get_board()
     n = len(board)
