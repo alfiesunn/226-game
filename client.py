@@ -21,6 +21,12 @@ PLAYER2 = 0b1000
 
 
 def receive_data(sc, size):
+    """
+    Utility function to receive data from the socket until the desired size is reached.
+    :param sc: From the server side
+    :param size: data size from server
+    :return: data from server
+    """
     data = b''
     while len(data) < size:
         curr_data = sc.recv(size - len(data))
@@ -30,6 +36,10 @@ def receive_data(sc, size):
     return data
 
 def main():
+    """
+    Main function to handle client operations
+    :return: Player score and Game board
+    """
     with socket(AF_INET, SOCK_STREAM) as sock:  # TCP socket
         sock.connect((HOST, PORT))  # Initiates 3-way handshake
         print('Client:', sock.getsockname())  # Client IP and port
@@ -47,30 +57,15 @@ def main():
 
         if player_id == 0x01:
             print(f'Connecting as Player {player_id}')
+            print()
             player_id = PLAYER1
         elif player_id == 0x02:
             print(f'Connecting as Player {player_id}')
+            print()
             player_id = PLAYER2
 
         while True:
-            message = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n').upper()
-
-            if message == 'Q':
-                cmd = QUIT
-            elif message == 'U':
-                cmd = UP
-            elif message == 'L':
-                cmd = LEFT
-            elif message == 'R':
-                cmd = RIGHT
-            elif message == 'D':
-                cmd = DOWN
-            else:
-                print('Invalid Input, Enter again.')
-                continue
-
-            # pack the cmd and sent to server
-            pack_data = player_id | cmd
+            pack_data = player_id | GET
             pack_cmd = struct.pack('!H', pack_data)
             sock.sendall(pack_cmd)
 
@@ -90,6 +85,29 @@ def main():
                 board = data[4:].decode('utf-8')
                 print(board)
 
+            # Prompt the user input
+            message = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n').upper()
+
+            if message == 'Q':
+                cmd = QUIT
+                print('Good Bye!')
+            elif message == 'U':
+                cmd = UP
+            elif message == 'L':
+                cmd = LEFT
+            elif message == 'R':
+                cmd = RIGHT
+            elif message == 'D':
+                cmd = DOWN
+            else:
+                print('Invalid Input, Enter again.')
+                continue
+
+            if message in ['U', 'L', 'R', 'D']:
+                # pack the cmd and sent to server
+                pack_data = player_id | cmd
+                pack_cmd = struct.pack('!H', pack_data)
+                sock.sendall(pack_cmd)
 
 if __name__ == "__main__":
     main()

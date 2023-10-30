@@ -18,37 +18,46 @@ SHORT = 2
 
 
 class Game:
+    """
+    Main Game class that handles player connections and game logic.
+    """
     # Setting size of board, and who many players
     def __init__(self):
+        """
+        Initialize the game board, players, and players id
+        """
         self.board = Board(10, 5, 5, 10, 2)
 
         # Create player
         self.player1 = self.board.add_player("1", random.randint(0, self.board.n - 1), random.randint(0, self.board.n - 1))
         self.player2 = self.board.add_player("2", random.randint(0, self.board.n - 1), random.randint(0, self.board.n - 1))
-        self.lock = Semaphore()
-        self.player_id = ['1', '2']
+        self.lock = Semaphore()     # Semaphore for thread synchronization
+        self.player_id = ['1', '2']     # List of player IDS
 
     def send_data(self, sc, data):
         """
-        Pack the data and sent all
-        :param sc: The socket object for client
-        :param data: The data the
-        :return:
+        Send data to the client with a header and indication the data length.
+        :param sc: The socket object for client.
+        :param data: The data to be sent.
+        :return: The data from client.
         """
         header = struct.pack("!H", len(data))
         sc.sendall(header + data)
 
     def threads(self, sc):
+        """
+        Handle individual client connections and game interactions
+        :param sc: The socket object for client.
+        :return: the play cmd and play id
+        """
         with self.lock:
                 player_id = self.player_id.pop(0).encode('utf-8')
-
                 if player_id is None:
                     self.send_data(sc, "FULL".encode('utf-8'))
                     sc.close()
                     return
                 header = struct.pack("!H", len(player_id))
                 sc.sendall(header)
-
                 sc.sendall(struct.pack("B", int(player_id)))
 
         try:
@@ -113,7 +122,6 @@ class Game:
                         print(f"Player {name} the score is {obj['score']}")
                     sc.sendall(struct.pack('!H', len(sent_score + str(display(self.board)).encode('utf-8'))))
                     sc.sendall(sent_score)
-                    # print(sent_score)
                     sc.sendall(str(display(self.board)).encode('utf-8'))
                     print(display(self.board))
 
@@ -123,6 +131,9 @@ class Game:
             print(f'ERROR: {e}')
 
     def start(self):
+        """
+        Start the game server and listen for incoming client connections.
+        """
         with socket(AF_INET, SOCK_STREAM) as sock:  # TCP socket
             sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)  # Details later
             sock.bind((HOST, PORT))  # Claim messages sent to port "PORT"
@@ -131,10 +142,9 @@ class Game:
 
             while True:
                 sc, _ = sock.accept()  # Wait until a connection is established
-                Thread(target=self.threads, args=(sc,)).start()
+                Thread(target=self.threads, args=(sc,)).start()     # Start a new thread for each client
 
 
 if __name__ == "__main__":
     g = Game()
     g.start()
-# ----------------------------------------------------------------------------------------------------------------------------------
