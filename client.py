@@ -1,13 +1,14 @@
 #!/usr/bin/python3.11
 from socket import socket, AF_INET, SOCK_STREAM
-from sys import argv
+from threading import Semaphore, Thread
+
 import struct
 
-
-BUF_SIZE = 1024
+SHORT = 2
+BUF_SIZE = 1
 HOST = '127.0.0.1'
 PORT = 12345
-CMD_MASK = 0b11110000
+
 UP = 0b00100000
 LEFT = 0b01000000
 RIGHT = 0b01100000
@@ -15,55 +16,80 @@ DOWN = 0b00110000
 QUIT = 0b10000000
 GET = 0b11110000
 
-PLAYER_MASK = 0b00001100
 PLAYER1 = 0b0100
 PLAYER2 = 0b1000
-PLAYER1_NAME = '1'
-PLAYER2_NAME = '2'
-
-ERROR = b'E'
-OK = b'O'
 
 
-with socket(AF_INET, SOCK_STREAM) as sock:  # TCP socket
-    sock.connect((HOST, PORT))   # Initiates 3-way handshake
-    print('Client:', sock.getsockname())  # Client IP and port
-# s = socket(AF_INET, SOCK_STREAM)
-# s.connect((HOST, PORT))
-# print('Client:', s.getsockname())  # Client IP and port
-
-def start_client():
-    sock.sendall('id'.encode('utf-8'))
-    data_size = sock.recv(BUF_SIZE)
-    player_id = data_size.decode('utf-8')
-    print(player_id)
-
-    if player_id == 'Error: 2 players are already exist.':
-        quit()
-
+def receive_data(sc, size):
+    data = b''
+    while len(data) < size:
+        curr_data = sc.recv(size - len(data))
+        if curr_data == b'':
+            return data
+        data += curr_data
+    return data
 
 def main():
-    start_client()
-    while True:
-        message = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n').upper()
-        if message == 'Q':
-            sock.sendall(struct.pack('!H', QUIT))
-            quit()
-        elif message == 'U':
-            sock.sendall(struct.pack('!H', UP))
-        elif message == 'L':
-            sock.sendall(struct.pack('!H', LEFT))
-        elif message == 'R':
-            sock.sendall(struct.pack('!H', RIGHT))
-        elif message == 'D':
-            sock.sendall(struct.pack('!H', DOWN))
-        else:
-            print('Invalid Input, Enter again.')
+    with socket(AF_INET, SOCK_STREAM) as sock:  # TCP socket
+        sock.connect((HOST, PORT))  # Initiates 3-way handshake
+        print('Client:', sock.getsockname())  # Client IP and port
+
+        # Receive the size of the player id from server
+        header = receive_data(sock, SHORT)
+        player_id_size = struct.unpack("!H", header)[0]
+
+        # Receive the player id
+        player_id = int.from_bytes(sock.recv(player_id_size), byteorder="big")
+
+        if player_id == 'FULL':
+            print('Error: 2 players are already exist.')
+            exit()
+
+        if player_id == 0x01:
+            print(f'Connecting as Player {player_id}')
+            player_id = PLAYER1
+        elif player_id == 0x02:
+            print(f'Connecting as Player {player_id}')
+            player_id = PLAYER2
+
+        while True:
+            message = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n').upper()
+
+            if message == 'Q':
+                cmd = QUIT
+            elif message == 'U':
+                cmd = UP
+            elif message == 'L':
+                cmd = LEFT
+            elif message == 'R':
+                cmd = RIGHT
+            elif message == 'D':
+                cmd = DOWN
+            else:
+                print('Invalid Input, Enter again.')
+                continue
+
+            # pack the cmd and sent to server
+            pack_data = player_id | cmd
+            pack_cmd = struct.pack('!H', pack_data)
+            sock.sendall(pack_cmd)
+
+            # Receive the size of the data from server
+            header = receive_data(sock, SHORT)
+            data_size = struct.unpack('!H', header)[0]
+
+            # Receive the scores from server
+            data = receive_data(sock, data_size)
+
+            # Output the board and scores
+            if data_size > 4:
+                player1_score, player2_score = struct.unpack('!HH', data[:4])
+                print(f'Player 1 Score: {player1_score}')
+                print(f'Player 2 Score: {player2_score}')
+                print()
+                board = data[4:].decode('utf-8')
+                print(board)
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
