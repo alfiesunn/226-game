@@ -38,9 +38,9 @@ def receive_data(sc, size):
 
 def receive_size_and_data(sock):
     """
-
-    :param sock:
-    :return:
+    Receive the data that includes a size header and the data.
+    :param sock: The connection from to receive the data.
+    :return: the data and data size
     """
     header = receive_data(sock, SHORT)
     data_size = struct.unpack("!H", header)[0]
@@ -49,9 +49,9 @@ def receive_size_and_data(sock):
 
 def print_scores_and_board(data):
     """
-
-    :param data:
-    :return:
+    Print the scores of both players and game board.
+    :param data: the data received from the server containing scores and board.
+    :return: the player scores and player id
     """
     player1_score, player2_score = struct.unpack('!HH', data[:4])
     print(f'Player 1 Score: {player1_score}')
@@ -63,10 +63,10 @@ def print_scores_and_board(data):
 
 def send_cmd(sock, player_id, cmd):
     """
-
-    :param sock:
-    :param player_id:
-    :param cmd:
+    Send a cmd to the server
+    :param sock: The socket connection to the server.
+    :param player_id: The ID of the player sending the command.
+    :param cmd: The player command
     :return:
     """
     pack_data = player_id | cmd
@@ -105,7 +105,7 @@ def main():
             send_cmd(sock, player_id, GET)
             data, data_size = receive_size_and_data(sock)
 
-            # Output the board and scores
+            # Output the board and scores if the received data is more than 4 byte
             if data_size > 4:
                 print_scores_and_board(data)
 

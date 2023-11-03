@@ -25,7 +25,7 @@ async def send_data(writer, data):
     :param data: The data to be sent.
     :return: The data from client.
     """
-    header = struct.pack("!H", len(data))
+    header = struct.pack("!H", len(data))   # pack the length of the data
     # sc.sendall(header + data)   # use for socket
     writer.write(header + data)
     await writer.drain()
@@ -81,6 +81,7 @@ class Game:
             while True:
                 data = await reader.read(BUF_SIZE)
 
+                # if no data is received, the client has disconnected.
                 if data == b'':
                     writer.close()
                     await writer.wait_closed()
