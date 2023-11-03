@@ -37,12 +37,22 @@ def receive_data(sc, size):
 
 
 def receive_size_and_data(sock):
+    """
+
+    :param sock:
+    :return:
+    """
     header = receive_data(sock, SHORT)
     data_size = struct.unpack("!H", header)[0]
     return receive_data(sock, data_size), data_size
 
 
 def print_scores_and_board(data):
+    """
+
+    :param data:
+    :return:
+    """
     player1_score, player2_score = struct.unpack('!HH', data[:4])
     print(f'Player 1 Score: {player1_score}')
     print(f'Player 2 Score: {player2_score}')
@@ -52,6 +62,13 @@ def print_scores_and_board(data):
 
 
 def send_cmd(sock, player_id, cmd):
+    """
+
+    :param sock:
+    :param player_id:
+    :param cmd:
+    :return:
+    """
     pack_data = player_id | cmd
     pack_cmd = struct.pack('!B', pack_data)
     sock.sendall(pack_cmd)
