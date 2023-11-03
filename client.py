@@ -35,6 +35,28 @@ def receive_data(sc, size):
         data += curr_data
     return data
 
+
+def receive_size_and_data(sock):
+    header = receive_data(sock, SHORT)
+    data_size = struct.unpack("!H", header)[0]
+    return receive_data(sock, data_size), data_size
+
+
+def print_scores_and_board(data):
+    player1_score, player2_score = struct.unpack('!HH', data[:4])
+    print(f'Player 1 Score: {player1_score}')
+    print(f'Player 2 Score: {player2_score}')
+    print()
+    board = data[4:].decode('utf-8')
+    print(board)
+
+
+def send_cmd(sock, player_id, cmd):
+    pack_data = player_id | cmd
+    pack_cmd = struct.pack('!B', pack_data)
+    sock.sendall(pack_cmd)
+
+
 def main():
     """
     Main function to handle client operations
@@ -45,9 +67,7 @@ def main():
         print('Client:', sock.getsockname())  # Client IP and port
 
         # Receive the size of the player id from server
-        header = receive_data(sock, SHORT)
-        player_id_size = struct.unpack("!H", header)[0]
-
+        player_id_size = struct.unpack("!H", receive_data(sock, SHORT))[0]
         # Receive the player id
         player_id = int.from_bytes(sock.recv(player_id_size), byteorder="big")
 
@@ -65,25 +85,12 @@ def main():
             player_id = PLAYER2
 
         while True:
-            pack_data = player_id | GET
-            pack_cmd = struct.pack('!H', pack_data)
-            sock.sendall(pack_cmd)
-
-            # Receive the size of the data from server
-            header = receive_data(sock, SHORT)
-            data_size = struct.unpack('!H', header)[0]
-
-            # Receive the scores from server
-            data = receive_data(sock, data_size)
+            send_cmd(sock, player_id, GET)
+            data, data_size = receive_size_and_data(sock)
 
             # Output the board and scores
             if data_size > 4:
-                player1_score, player2_score = struct.unpack('!HH', data[:4])
-                print(f'Player 1 Score: {player1_score}')
-                print(f'Player 2 Score: {player2_score}')
-                print()
-                board = data[4:].decode('utf-8')
-                print(board)
+                print_scores_and_board(data)
 
             # Prompt the user input
             message = input('(U)p (L)eft (R)ight (D)own (Q)uit?\n').upper()
@@ -91,6 +98,8 @@ def main():
             if message == 'Q':
                 cmd = QUIT
                 print('Good Bye!')
+                send_cmd(sock, player_id, cmd)
+                break
             elif message == 'U':
                 cmd = UP
             elif message == 'L':
@@ -105,9 +114,13 @@ def main():
 
             if message in ['U', 'L', 'R', 'D']:
                 # pack the cmd and sent to server
-                pack_data = player_id | cmd
-                pack_cmd = struct.pack('!H', pack_data)
-                sock.sendall(pack_cmd)
+                send_cmd(sock, player_id, cmd)
+                # print(data)
+                data, data_size = receive_size_and_data(sock)
+                # Output the board and scores
+                if data_size > 4:
+                    print_scores_and_board(data)
+
 
 if __name__ == "__main__":
     main()
